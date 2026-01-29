@@ -26,13 +26,13 @@ $sql = "
 
 try {
     $stmt = $pdo->query($sql);
-    $users = $stmt->fetchAll();
+$users = $stmt->fetchAll();
 
-    echo json_encode([
-        "ok" => true,
-        "count" => count($users),
-        "data" => $users
-    ]);
+echo json_encode([
+    "ok" => true,
+    "data" => $users
+]);
+
 
 } catch (PDOException $e) {
     http_response_code(500);
