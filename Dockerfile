@@ -1,5 +1,8 @@
 FROM php:8.4-apache
 
+# Disable other MPMs, enable prefork ONLY
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+
 # Install MySQL extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
