@@ -1,46 +1,52 @@
 <?php
 /* =============================
-   DATABASE CONFIG (RAILWAY)
+   DATABASE CONFIG (RAILWAY - PDO)
 ============================= */
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 header("Content-Type: application/json");
 
-// Load Railway environment variables
-$host = getenv('MYSQLHOST');
-$port = getenv('MYSQLPORT') ?: 3306;
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
-$db   = getenv('MYSQLDATABASE');
+/* =============================
+   READ ENV VARIABLES
+============================= */
 
-// Safety check
-if (!$host || !$user || !$db) {
+$dbHost = getenv('mysql.railway.internal');
+$dbPort = getenv('3306') ?: 3306;
+$dbName = getenv('railway');
+$dbUser = getenv('root');
+$dbPass = getenv('lpYfrUyFMFPeCqJzYwnpUZRKIwIyotlT');
+
+if (!$dbHost || !$dbName || !$dbUser) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
-        "error" => "Missing Railway MySQL environment variables",
-        "env" => [
-            "MYSQLHOST" => $host,
-            "MYSQLUSER" => $user,
-            "MYSQLDATABASE" => $db
-        ]
+        "error" => "Missing Railway MySQL environment variables"
     ]);
     exit;
 }
 
 /* =============================
-   CONNECT
+   CONNECT (PDO)
 ============================= */
-$conn = mysqli_connect($host, $user, $pass, $db, $port);
 
-if (!$conn) {
+try {
+    $dsn = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
+
+    $pdo = new PDO($dsn, $dbUser, $dbPass, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ]);
+
+} catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
         "error" => "Database connection failed",
-        "details" => mysqli_connect_error()
+        "details" => $e->getMessage()
     ]);
     exit;
 }
-
-// Force UTF-8
-mysqli_set_charset($conn, "utf8mb4");
