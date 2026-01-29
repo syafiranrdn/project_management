@@ -1,2 +1,3 @@
 #!/bin/sh
-php -S 0.0.0.0:$PORT index.php
+php -S 0.0.0.0:8080 index.php
+
