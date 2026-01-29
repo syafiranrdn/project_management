@@ -1,26 +1,25 @@
 <?php
 /* =============================
-   DATABASE CONFIG (RAILWAY - PDO)
+   DATABASE CONFIG (RAILWAY PDO)
 ============================= */
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-header("Content-Type: application/json");
-
 /* =============================
-   READ ENV VARIABLES
+   READ RAILWAY ENV VARIABLES
 ============================= */
 
-$dbHost = getenv('mysql.railway.internal');
-$dbPort = getenv('3306') ?: 3306;
-$dbName = getenv('railway');
-$dbUser = getenv('root');
-$dbPass = getenv('lpYfrUyFMFPeCqJzYwnpUZRKIwIyotlT');
+$dbHost = getenv('MYSQLHOST');
+$dbPort = getenv('MYSQLPORT') ?: 3306;
+$dbName = getenv('MYSQLDATABASE');
+$dbUser = getenv('MYSQLUSER');
+$dbPass = getenv('MYSQLPASSWORD');
 
-if (!$dbHost || !$dbName || !$dbUser) {
+if (!$dbHost || !$dbName || !$dbUser || !$dbPass) {
     http_response_code(500);
+    header("Content-Type: application/json");
     echo json_encode([
         "ok" => false,
         "error" => "Missing Railway MySQL environment variables"
@@ -43,6 +42,7 @@ try {
 
 } catch (PDOException $e) {
     http_response_code(500);
+    header("Content-Type: application/json");
     echo json_encode([
         "ok" => false,
         "error" => "Database connection failed",
