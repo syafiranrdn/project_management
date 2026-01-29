@@ -4,9 +4,15 @@ header("Content-Type: application/json");
 require_once __DIR__ . "/../database.php";
 
 /* =============================
-   FETCH USERS
+   DEBUG MODE (TEMPORARY)
 ============================= */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
+/* =============================
+   QUERY
+============================= */
 $sql = "
 SELECT
     u.user_id,
@@ -24,9 +30,11 @@ LEFT JOIN departments d
 ORDER BY u.user_id ASC
 ";
 
+/* =============================
+   EXECUTE
+============================= */
 $result = mysqli_query($conn, $sql);
 
-// 🔴 CRITICAL: handle SQL error
 if (!$result) {
     http_response_code(500);
     echo json_encode([
@@ -37,14 +45,19 @@ if (!$result) {
     exit;
 }
 
-$users = [];
-
+/* =============================
+   FETCH DATA
+============================= */
+$data = [];
 while ($row = mysqli_fetch_assoc($result)) {
-    $users[] = $row;
+    $data[] = $row;
 }
 
+/* =============================
+   RESPONSE
+============================= */
 echo json_encode([
     "ok" => true,
-    "count" => count($users),
-    "data" => $users
+    "count" => count($data),
+    "data" => $data
 ]);
