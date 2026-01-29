@@ -1,6 +1,6 @@
 <?php
 /* =============================
-   DATABASE CONFIG (RAILWAY PDO)
+   DATABASE CONFIG (RAILWAY - MYSQLI)
 ============================= */
 
 ini_set('display_errors', 1);
@@ -11,43 +11,43 @@ error_reporting(E_ALL);
    READ RAILWAY ENV VARIABLES
 ============================= */
 
-$dbHost = getenv('mysql.railway.internal');
-$dbPort = getenv('3306') ?: 3306;
-$dbName = getenv('railway');
-$dbUser = getenv('root');
-$dbPass = getenv('lpYfrUyFMFPeCqJzYwnpUZRKIwIyotlT');
+$dbHost = getenv('MYSQLHOST');
+$dbPort = getenv('MYSQLPORT') ?: 3306;
+$dbName = getenv('MYSQLDATABASE');
+$dbUser = getenv('MYSQLUSER');
+$dbPass = getenv('MYSQLPASSWORD');
 
-if (!$dbHost || !$dbName || !$dbUser || !$dbPass) {
+if (!$dbHost || !$dbName || !$dbUser) {
     http_response_code(500);
     header("Content-Type: application/json");
     echo json_encode([
         "ok" => false,
-        "error" => "Missing Railway MySQL environment variables"
+        "error" => "Missing Railway MySQL environment variables",
+        "debug" => [
+            "MYSQLHOST" => $dbHost,
+            "MYSQLPORT" => $dbPort,
+            "MYSQLDATABASE" => $dbName,
+            "MYSQLUSER" => $dbUser
+        ]
     ]);
     exit;
 }
 
 /* =============================
-   CONNECT (PDO)
+   CONNECT (MYSQLI)
 ============================= */
 
-try {
-    $dsn = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
+$conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName, (int)$dbPort);
 
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
-
-} catch (PDOException $e) {
+if (!$conn) {
     http_response_code(500);
     header("Content-Type: application/json");
     echo json_encode([
         "ok" => false,
         "error" => "Database connection failed",
-        "details" => $e->getMessage()
+        "details" => mysqli_connect_error()
     ]);
     exit;
 }
 
+mysqli_set_charset($conn, "utf8mb4");
