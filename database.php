@@ -1,46 +1,63 @@
 <?php
-/* =============================
-   DATABASE CONFIG (RAILWAY)
-============================= */
-
 header("Content-Type: application/json");
 
-// Load Railway environment variables
-$host = getenv('MYSQLHOST');
-$port = getenv('MYSQLPORT') ?: 3306;
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
-$db   = getenv('MYSQLDATABASE');
+require_once __DIR__ . "/../database.php";
 
-// Safety check
-if (!$host || !$user || !$db) {
+/* =============================
+   DEBUG MODE (TEMPORARY)
+============================= */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+/* =============================
+   QUERY
+============================= */
+$sql = "
+SELECT
+    u.user_id,
+    u.name,
+    u.email,
+    u.role,
+    u.admin_level,
+    u.department_id,
+    d.department_name,
+    u.status,
+    u.created_at
+FROM users u
+LEFT JOIN departments d
+    ON d.department_id = u.department_id
+ORDER BY u.user_id ASC
+";
+
+/* =============================
+   EXECUTE
+============================= */
+$result = mysqli_query($conn, $sql);
+
+if (!$result) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
-        "error" => "Missing Railway MySQL environment variables",
-        "env" => [
-            "MYSQLHOST" => $host,
-            "MYSQLUSER" => $user,
-            "MYSQLDATABASE" => $db
-        ]
+        "error" => "Query failed",
+        "sql_error" => mysqli_error($conn)
     ]);
     exit;
 }
 
 /* =============================
-   CONNECT
+   FETCH DATA
 ============================= */
-$conn = mysqli_connect($host, $user, $pass, $db, $port);
-
-if (!$conn) {
-    http_response_code(500);
-    echo json_encode([
-        "ok" => false,
-        "error" => "Database connection failed",
-        "details" => mysqli_connect_error()
-    ]);
-    exit;
+$data = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $data[] = $row;
 }
 
-// Force UTF-8
-mysqli_set_charset($conn, "utf8mb4");
+/* =============================
+   RESPONSE
+============================= */
+echo json_encode([
+    "ok" => true,
+    "count" => count($data),
+    "data" => $data
+]);
