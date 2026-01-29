@@ -1,24 +1,25 @@
 <?php
 /* =============================
-   DATABASE CONFIG (RAILWAY PDO)
+   DATABASE CONFIG (RAILWAY - MYSQLI)
 ============================= */
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+header("Content-Type: application/json");
+
 /* =============================
    READ RAILWAY ENV VARIABLES
 ============================= */
 
-// ⚠️ INI NAMA VARIABLE YANG BETUL DI RAILWAY
-$dbHost = getenv('MYSQLHOST');
-$dbPort = getenv('MYSQLPORT') ?: 3306;
-$dbName = getenv('MYSQLDATABASE');
-$dbUser = getenv('MYSQLUSER');
-$dbPass = getenv('MYSQLPASSWORD');
+$host = getenv('MYSQLHOST');
+$port = getenv('MYSQLPORT') ?: 3306;
+$user = getenv('MYSQLUSER');
+$pass = getenv('MYSQLPASSWORD');
+$db   = getenv('MYSQLDATABASE');
 
-if (!$dbHost || !$dbName || !$dbUser) {
+if (!$host || !$user || !$db) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
@@ -28,24 +29,19 @@ if (!$dbHost || !$dbName || !$dbUser) {
 }
 
 /* =============================
-   CONNECT (PDO ONLY)
+   CONNECT (MYSQLI)
 ============================= */
 
-try {
-    $dsn = "mysql:host=$dbHost;port=$dbPort;dbname=$dbName;charset=utf8mb4";
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
 
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
-
-} catch (PDOException $e) {
+if (!$conn) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
         "error" => "Database connection failed",
-        "details" => $e->getMessage()
+        "details" => mysqli_connect_error()
     ]);
     exit;
 }
+
+mysqli_set_charset($conn, "utf8mb4");
