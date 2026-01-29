@@ -3,42 +3,40 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . '/../database.php';
 
-/* =============================
-   FETCH USERS
-============================= */
-
 $sql = "
-    SELECT
-        u.user_id,
-        u.name,
-        u.email,
-        u.role,
-        u.admin_level,
-        u.department_id,
-        d.department_name,
-        u.status,
-        u.created_at
-    FROM users u
-    LEFT JOIN departments d
-        ON d.department_id = u.department_id
-    ORDER BY u.user_id ASC
+SELECT
+    u.user_id,
+    u.name,
+    u.email,
+    u.role,
+    u.admin_level,
+    u.department_id,
+    d.department_name,
+    u.status,
+    u.created_at
+FROM users u
+LEFT JOIN departments d ON d.department_id = u.department_id
+ORDER BY u.user_id ASC
 ";
 
-try {
-    $stmt = $pdo->query($sql);
-$users = $stmt->fetchAll();
+$result = mysqli_query($conn, $sql);
 
-echo json_encode([
-    "ok" => true,
-    "data" => $users
-]);
-
-
-} catch (PDOException $e) {
+if (!$result) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
         "error" => "Query failed",
-        "details" => $e->getMessage()
+        "details" => mysqli_error($conn)
     ]);
+    exit;
 }
+
+$data = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $data[] = $row;
+}
+
+echo json_encode([
+    "ok" => true,
+    "data" => $data
+]);
