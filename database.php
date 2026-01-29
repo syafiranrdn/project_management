@@ -11,11 +11,11 @@ error_reporting(E_ALL);
    READ RAILWAY ENV VARIABLES
 ============================= */
 
-$dbHost = getenv('MYSQLHOST');
-$dbPort = getenv('MYSQLPORT') ?: 3306;
-$dbName = getenv('MYSQLDATABASE');
-$dbUser = getenv('MYSQLUSER');
-$dbPass = getenv('MYSQLPASSWORD');
+$dbHost = getenv('mysql.railway.internal');
+$dbPort = getenv('3306') ?: 3306;
+$dbName = getenv('railway');
+$dbUser = getenv('root');
+$dbPass = getenv('lpYfrUyFMFPeCqJzYwnpUZRKIwIyotlT');
 
 if (!$dbHost || !$dbName || !$dbUser || !$dbPass) {
     http_response_code(500);
@@ -50,3 +50,4 @@ try {
     ]);
     exit;
 }
+
