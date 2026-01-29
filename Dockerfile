@@ -1,18 +1,22 @@
 FROM php:8.4-apache
 
-# Disable other MPMs, enable prefork ONLY
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+# Remove all existing MPM configs
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_*.conf
 
-# Install MySQL extensions
+# Enable ONLY prefork MPM
+RUN a2enmod mpm_prefork
+
+# Install PHP MySQL extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Enable Apache rewrite
+# Enable rewrite
 RUN a2enmod rewrite
 
-# Copy project files
+# Copy app
 COPY . /var/www/html/
 
-# Fix permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
