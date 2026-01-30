@@ -18,7 +18,7 @@ $raw = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
 /* Fallback (if x-www-form-urlencoded) */
-$email = trim($data['email'] ?? $_POST['admin@mail.com'] ?? '');
+$email = trim($data['email'] ?? $_POST['email'] ?? '');
 $password = trim($data['password'] ?? $_POST['password'] ?? '');
 
 /* 🧪 VALIDATION */
