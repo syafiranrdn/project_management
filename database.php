@@ -1,44 +1,24 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+header("Content-Type: application/json; charset=UTF-8");
 
-header("Content-Type: application/json");
-
-/* =============================
-   RAILWAY MYSQL ENV
-============================= */
 $host = getenv('MYSQLHOST');
 $port = getenv('MYSQLPORT') ?: 3306;
 $db   = getenv('MYSQLDATABASE');
 $user = getenv('MYSQLUSER');
 $pass = getenv('MYSQLPASSWORD');
 
-/* =============================
-   VALIDATE
-============================= */
-if (!$host || !$db || !$user) {
-    http_response_code(500);
-    echo json_encode([
-        "ok" => false,
-        "error" => "Missing Railway MySQL environment variables"
+try {
+    $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
+    $conn = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
-    exit;
-}
-
-/* =============================
-   CONNECT
-============================= */
-$conn = mysqli_connect($host, $user, $pass, $db, $port);
-
-if (!$conn) {
+} catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
         "error" => "Database connection failed",
-        "details" => mysqli_connect_error()
+        "details" => $e->getMessage()
     ]);
     exit;
 }
-
-mysqli_set_charset($conn, "utf8mb4");
