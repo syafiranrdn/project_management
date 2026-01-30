@@ -14,12 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 /* 📥 READ JSON BODY */
-$raw = file_get_contents("php://input");
-$data = json_decode($raw, true);
+$input = json_decode(file_get_contents("php://input"), true);
 
-/* Fallback (if x-www-form-urlencoded) */
-$email = trim($data['email'] ?? $_POST['email'] ?? '');
-$password = trim($data['password'] ?? $_POST['password'] ?? '');
+$email = trim($input['email'] ?? '');
+$password = trim($input['password'] ?? '');
 
 /* 🧪 VALIDATION */
 if ($email === '' || $password === '') {
@@ -30,15 +28,19 @@ if ($email === '' || $password === '') {
     exit;
 }
 
-/* 🔍 FIND USER */
-$stmt = $conn->prepare("
+/* 🔍 FIND USER (PDO – EXPLICIT BINDING) */
+$sql = "
     SELECT user_id, name, email, password, role
     FROM users
-    WHERE email = ?
+    WHERE email = :email
     LIMIT 1
-");
-$stmt->execute([$email]);
-$user = $stmt->fetch();
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':email', $email, PDO::PARAM_STR);
+$stmt->execute();
+
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     echo json_encode([
@@ -65,4 +67,3 @@ echo json_encode([
     'user' => $user
 ]);
 exit;
-
