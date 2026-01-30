@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=UTF-8');
 
-require_once __DIR__ . '/../database.php';
+require_once dirname(__DIR__, 2) . '/database.php';
+
 
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
