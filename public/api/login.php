@@ -3,6 +3,10 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once dirname(__DIR__, 2) . '/database.php';
 
+echo password_hash('password', PASSWORD_DEFAULT);
+exit;
+
+
 /* 🔒 POST ONLY */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -66,5 +70,3 @@ echo json_encode([
 ]);
 exit;
 
-echo password_hash('password', PASSWORD_DEFAULT);
-exit;
