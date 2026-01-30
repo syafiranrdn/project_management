@@ -1,15 +1,9 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 header('Content-Type: application/json; charset=UTF-8');
 
 require_once dirname(__DIR__, 2) . '/database.php';
 
-
-
+/* 🔒 POST ONLY */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
@@ -19,9 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$email    = trim($_POST['admin@mail.com'] ?? '');
-$password = (string)($_POST['password'] ?? '');
+/* 📥 READ JSON BODY */
+$raw = file_get_contents("php://input");
+$data = json_decode($raw, true);
 
+/* Fallback (if x-www-form-urlencoded) */
+$email = trim($data['email'] ?? $_POST['email'] ?? '');
+$password = trim($data['password'] ?? $_POST['password'] ?? '');
+
+/* 🧪 VALIDATION */
 if ($email === '' || $password === '') {
     echo json_encode([
         'success' => false,
@@ -30,43 +30,38 @@ if ($email === '' || $password === '') {
     exit;
 }
 
+/* 🔍 FIND USER */
 $stmt = $conn->prepare("
-    SELECT user_id, name, email, password, role, status, admin_level, department_id
+    SELECT user_id, name, email, password, role
     FROM users
     WHERE email = ?
     LIMIT 1
 ");
+$stmt->execute([$email]);
+$user = $stmt->fetch();
 
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$res  = $stmt->get_result();
-$user = $res ? $res->fetch_assoc() : null;
-$stmt->close();
-
-if (!$user || !password_verify($password, $user['password'])) {
+if (!$user) {
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid email or password'
+        'message' => 'User not found'
     ]);
     exit;
 }
 
-if ($user['status'] !== 'Active') {
+/* 🔐 PASSWORD CHECK */
+if (!password_verify($password, $user['password'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Account inactive'
+        'message' => 'Invalid credentials'
     ]);
     exit;
 }
+
+/* ✅ SUCCESS */
+unset($user['password']);
 
 echo json_encode([
     'success' => true,
-    'user' => [
-        'user_id' => (int)$user['user_id'],
-        'name' => $user['name'],
-        'email' => $user['email'],
-        'role' => $user['role'],
-        'admin_level' => $user['admin_level'],
-        'department_id' => $user['department_id']
-    ]
+    'user' => $user
 ]);
+exit;
