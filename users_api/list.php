@@ -18,24 +18,19 @@ LEFT JOIN departments d ON d.department_id = u.department_id
 ORDER BY u.user_id ASC
 ";
 
-$result = mysqli_query($conn, $sql);
+try {
+    $stmt = $conn->query($sql);
+    $data = $stmt->fetchAll();
 
-if (!$result) {
+    echo json_encode([
+        "ok" => true,
+        "data" => $data
+    ]);
+} catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
         "ok" => false,
         "error" => "Query failed",
-        "details" => mysqli_error($conn)
+        "details" => $e->getMessage()
     ]);
-    exit;
 }
-
-$data = [];
-while ($row = mysqli_fetch_assoc($result)) {
-    $data[] = $row;
-}
-
-echo json_encode([
-    "ok" => true,
-    "data" => $data
-]);
