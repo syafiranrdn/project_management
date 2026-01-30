@@ -1,5 +1,6 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=UTF-8");
+
 require_once __DIR__ . '/../database.php';
 
 $sql = "
@@ -19,17 +20,18 @@ ORDER BY u.user_id ASC
 ";
 
 try {
-    $stmt = $conn->query($sql);
+    $stmt = $pdo->query($sql);
     $data = $stmt->fetchAll();
 
     echo json_encode([
-        "ok" => true,
+        "ok"   => true,
         "data" => $data
     ]);
+
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
-        "ok" => false,
+        "ok"    => false,
         "error" => "Query failed",
         "details" => $e->getMessage()
     ]);
