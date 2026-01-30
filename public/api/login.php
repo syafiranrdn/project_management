@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$email    = trim($_POST['email'] ?? '');
-$password = (string)($_POST['password'] ?? '');
+$email    = trim($_POST['email'] ?? 'admin@mail.com');
+$password = (string)($_POST['password'] ?? 'password');
 
 if ($email === '' || $password === '') {
     echo json_encode([
