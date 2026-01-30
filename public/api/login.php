@@ -65,3 +65,6 @@ echo json_encode([
     'user' => $user
 ]);
 exit;
+
+echo password_hash('password', PASSWORD_DEFAULT);
+exit;
