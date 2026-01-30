@@ -1,17 +1,10 @@
-FROM php:8.2-apache
+FROM php:8.2-cli
 
 # Install MySQL drivers
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Enable Apache rewrite (important for /api)
-RUN a2enmod rewrite
-
-# Set Apache to listen on Railway PORT
-ENV PORT=8080
-RUN sed -i "s/80/${PORT}/g" /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
-
-# Project files
-WORKDIR /var/www/html
+WORKDIR /app
 COPY . .
 
-EXPOSE 8080
+# Railway injects PORT at runtime
+CMD ["sh", "-c", "php -S 0.0.0.0:$PORT -t public"]
