@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$email    = trim($_POST['email'] ?? '');
+$email    = trim($_POST['admin@mail.com'] ?? '');
 $password = (string)($_POST['password'] ?? '');
 
 if ($email === '' || $password === '') {
